@@ -33,9 +33,8 @@
 #define MSK_12HOUR_AMPM 0x20
 #define OFS_12HOUR_AMPM 5
 #define MSK_12HOUR_10   0x10
-#define OFS_12HOUR_10   4
 #define MSK_24HOUR_10   0x30
-#define OFS_24HOUR_10   4
+#define OFS_HOUR_10     4
 #define MSK_HOUR_1      0x0F
 #define OFS_HOUR_1      0
 #define MODE_12         0x01
