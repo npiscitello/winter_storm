@@ -11,7 +11,12 @@
 
 // error codes
 typedef enum {
-  RTC_OK
+  RTC_OK,
+  RTC_SLAW_NACK,
+  RTC_DTRN_NACK,
+  RTC_SLAR_NACK,
+  RTC_DRCV_NACK,
+  RTC_BAD_STATUS
 } rtc_err_t;
 
 // we'll use the POSIX ctime broken-down structure

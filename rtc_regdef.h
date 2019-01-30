@@ -9,8 +9,8 @@
 #define VAL_READ        0x01
 #define MSK_RW          0x01
 #define OFS_RW          0
-#define VAL_ADDR_READ   (RTC_ADDR & RTC_ADDR_MASK) | (RTC_READ & RTC_RW_MASK)
-#define VAL_ADDR_WRITE  (RTC_ADDR & RTC_ADDR_MASK) | (RTC_WRITE & RTC_RW_MASK)
+#define VAL_ADDR_READ   (VAL_ADDR & MSK_ADDR) | (VAL_READ & MSK_RW)
+#define VAL_ADDR_WRITE  (VAL_ADDR & MSK_ADDR) | (VAL_WRITE & MSK_RW)
 
 // register definitions and bitmasks
 #define REG_SEC         0x00
@@ -71,5 +71,19 @@
 #define OFS_CTRL_SQWE   4
 #define MSK_CTRL_RS     0x30
 #define OFS_CTRL_RS     0
+
+// I2C Status Reg Values
+#define MSK_STATUS      0xF8
+#define STS_START       0x08
+#define STS_RSTART      0x10
+#define STS_SLAW_ACK    0x18
+#define STS_SLAW_NACK   0x20
+#define STS_DTRN_ACK    0x28
+#define STS_DTRN_NACK   0x30
+#define STS_ARB_LOST    0x38
+#define STS_SLAR_ACK    0x40
+#define STS_SLAR_NACK   0x48
+#define STS_DRCV_ACK    0x50
+#define STS_DRCV_NACK   0x58
 
 #endif

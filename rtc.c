@@ -7,26 +7,93 @@
 // safely overwrites the bits in BUF defined by MASK with VAL
 #define EDIT_BITS(BUF, MASK, VAL) BUF = (BUF & !MASK) | ((VAL) & MASK)
 
+// send a condition over TWI bus
+#define SEND_START TWCR = 0x00 | _BV(TWSTA) | _BV(TWINT);
+#define SEND_STOP TWCR = 0x00 | _BV(TWSTO) | _BV(TWINT);
+
 void i2c_init() {
-  // enable I2C and pullup resistors
-  TWCR |= 0x00 | _BV(TWEN);
+  PRR &= 0xFF & !_BV(PRTWI);
+  // enable I2C interrupts (AFTER polling implementation works!) by setting TWIE
+  TWCR |= 0x00 | _BV(TWEN) | _BV(TWEA);
   PORTC |= 0x00 | _BV(PORTC4) | _BV(PORTC5);
   return;
 }
 
 // i2c_init must have been called, otherwise the bus may not be set up
+// get this working synchronously (polling-based), then split it up to run async (interrupt-based)
+// addr: slave address, with read/write bit appended
+rtc_err_t i2c_transaction(uint8_t addr, uint8_t* val, uint8_t count) {
+  SEND_START;
+  uint8_t bytes = 0;
+  while( bytes < count ) {
+    if( TWCR & _BV(TWINT) ) {
+      switch( TWSR & MSK_STATUS ) {
+        case STS_START:
+          // start transmitted, send addr
+          break;
+
+        case STS_RSTART:
+          // repeated start, send addr
+          break;
+
+        case STS_SLAW_ACK:
+          // slave acknowledged address, send data
+          break;
+
+        case STS_SLAW_NACK:
+          SEND_STOP;
+          return(RTC_SLAW_NACK);
+          break;
+
+        case STS_DTRN_ACK:
+          // slave acknowledged byte, increment byte counter and send next byte (if applicable)
+          break;
+
+        case STS_DTRN_NACK:
+          SEND_STOP;
+          return(RTC_DTRN_NACK);
+          break;
+
+        case STS_ARB_LOST :
+          SEND_START;
+          break;
+
+        case STS_SLAR_ACK :
+          // slave acknowledged address, perpare for data receipt
+          break;
+
+        case STS_SLAR_NACK:
+          SEND_STOP;
+          return(RTC_SLAR_NACK);
+          break;
+
+        case STS_DRCV_ACK :
+          // we received a byte and acknowledged, increment byte counter
+          break;
+
+        case STS_DRCV_NACK:
+          SEND_STOP;
+          return(RTC_DRCV_NACK);
+          break;
+
+        default:
+          SEND_STOP;
+          return(RTC_BAD_STATUS);
+          break;
+      }
+    }
+  }
+  SEND_STOP;
+  return RTC_OK;
+}
+
 void i2c_write(uint8_t* val, uint8_t count) {
-  // generate start
-  // write write address
-  // write data
+  i2c_transaction(VAL_ADDR_WRITE, val, count);
   return;
 }
 
-// i2c_init must have been called, otherwise the bus may not be set up
 void i2c_read(uint8_t* val, uint8_t count) {
-  // generate start
-  // write read address
-  // read data
+  i2c_transaction(VAL_ADDR_READ, val, count);
   return;
 }
 
